@@ -1,0 +1,31 @@
+name: Buzz CLI Windows x64
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+
+      - name: Set up repository-pinned Rust toolchain
+        run: rustup target add x86_64-pc-windows-msvc
+
+      - name: Build only the Buzz CLI
+        run: cargo build --locked --release --package buzz-cli --bin buzz --target x86_64-pc-windows-msvc
+
+      - name: Verify buzz.exe starts
+        run: ./target/x86_64-pc-windows-msvc/release/buzz.exe --help
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: buzz-cli-windows-x64
+          path: target/x86_64-pc-windows-msvc/release/buzz.exe
+          if-no-files-found: error
